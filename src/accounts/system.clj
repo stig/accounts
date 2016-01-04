@@ -11,6 +11,7 @@
             [ring.component.jetty :refer [jetty-server]]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
             [ring.middleware.webjars :refer [wrap-webjars]]
+            [accounts.endpoint.login :refer [login-endpoint]]
             [accounts.endpoint.example :refer [example-endpoint]]))
 
 (def base-config
@@ -30,9 +31,11 @@
          :http (jetty-server (:http config))
          :db   (hikaricp (:db config))
          :ragtime (ragtime (:ragtime config))
+         :login (endpoint-component login-endpoint)
          :example (endpoint-component example-endpoint))
         (component/system-using
          {:http [:app]
-          :app  [:example]
+          :app  [:example :login]
           :ragtime [:db]
+          :login []
           :example [:db]}))))
