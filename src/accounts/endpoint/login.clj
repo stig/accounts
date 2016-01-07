@@ -4,6 +4,7 @@
             [hiccup
              [form :refer [email-field form-to submit-button]]
              [page :refer [html5]]]
+            [postal.core :refer [send-message]]
             [ring.util.anti-forgery :refer [anti-forgery-field]]))
 
 (defn login-form []
@@ -18,10 +19,32 @@
 (defn login-endpoint [config]
   (context "/login" []
            (POST "/" [email]
+                 (send-message (:smtp config)
+                               {:from "accounts@superloopy.io"
+                                :to email
+                                :subject "One-Time Login URL"
+                                :body (format "Click here to log in to Accounts:
+http://0.0.0.0:3000/login/%s/%s/%s"
+                                              email
+                                              123
+                                              "DEADBEEF")})
                  (html5 (layout/base
                          {:content
-                          (list [:h1 "Email"]
-                                [:p email])})))
+                          (list [:h1 "Login token on its way!"]
+                                [:p "We just sent a login link to your email
+                                address. It should be with you shortly. The
+                                link is only valid for 20 minutes, so please
+                                check your mail."])})))
+           (GET "/:email/:ts/:hmac" [email ts hmac]
+                (html5 (layout/base
+                        {:content [:dl
+                                   [:dt :email]
+                                   [:dd email]
+                                   [:dt :ts]
+                                   [:dd ts]
+                                   [:dt :hmac]
+                                   [:dd hmac]]})))
            (GET "/" []
                 (html5 (layout/base
                         {:content (login-form)})))))
+
