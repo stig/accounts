@@ -23,11 +23,15 @@
                                {:from "accounts@superloopy.io"
                                 :to email
                                 :subject "One-Time Login URL"
-                                :body (format "Click here to log in to Accounts:
-http://0.0.0.0:3000/login/%s/%s/%s"
-                                              email
-                                              123
-                                              "DEADBEEF")})
+                                :body [{:type "text/html"
+                                        :content (html5
+                                                  (layout/base
+                                                   {:content
+                                                    (form-to [:post (format "http://0.0.0.0:3000/login/%s/%s/%s"
+                                                                            email
+                                                                            123
+                                                                            "DEADBEEF")]
+                                                             (submit-button "Log me in!"))}))}]})
                  (html5 (layout/base
                          {:content
                           (list [:h1 "Login token on its way!"]
@@ -47,4 +51,3 @@ http://0.0.0.0:3000/login/%s/%s/%s"
            (GET "/" []
                 (html5 (layout/base
                         {:content (login-form)})))))
-
