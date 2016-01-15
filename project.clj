@@ -19,6 +19,7 @@
                  [org.xerial/sqlite-jdbc "3.8.11.2"]
                  [duct/ragtime-component "0.1.2"]
                  [hiccup "1.0.5"]
+                 [yesql "0.5.1"]
                  [ring/ring-anti-forgery "1.0.0"]
                  [com.draines/postal "1.11.3"]]
   :plugins [[lein-environ "1.0.1"]
