@@ -1,0 +1,18 @@
+#+OPTIONS: toc:nil
+
+To play with hikaricp & yesql in REPL:
+
+#+BEGIN_SRC clojure
+  (require '[yesql.core :refer :all])
+  (require '[com.stuartsierra.component :as component])
+  (require '[duct.component.hikaricp :refer [hikaricp]])
+  (def db (component/start (hikaricp {:uri "jdbc:sqlite:db/dev.sqlite"})))
+  (def spec {:connection (:spec db)})
+
+  (defqueries "accounts/sql/users.sql" spec)
+
+  (def last-insert-rowid (keyword "last_insert_rowid()"))
+  (last-insert-rowid (insert-user<! {:email (gensym)
+                                     :moniker "Desmon Tutu"}))
+#+END_SRC
+
