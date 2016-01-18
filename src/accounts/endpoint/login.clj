@@ -1,5 +1,6 @@
 (ns accounts.endpoint.login
   (:require [accounts.layout :as layout]
+            [clojure.java.jdbc :as j]
             [compojure.core :refer :all]
             [hiccup
              [form :refer [email-field form-to submit-button]]
@@ -16,29 +17,42 @@
             (submit-button :submit))))
 
 
+(defn send-login-email [config email]
+  (send-message (:smtp config)
+                {:from "accounts@superloopy.io"
+                 :to email
+                 :subject "One-Time Login URL"
+                 :body [{:type "text/html"
+                         :content (html5
+                                   (layout/base
+                                    {:content
+                                     (form-to [:post (format "http://0.0.0.0:3000/login/%s/%s/%s"
+                                                             email
+                                                             123
+                                                             "DEADBEEF")]
+                                              (submit-button "Log me in!"))}))}]}))
+
 (defn login-endpoint [config]
   (context "/login" []
            (POST "/" [email]
-                 (send-message (:smtp config)
-                               {:from "accounts@superloopy.io"
-                                :to email
-                                :subject "One-Time Login URL"
-                                :body [{:type "text/html"
-                                        :content (html5
-                                                  (layout/base
-                                                   {:content
-                                                    (form-to [:post (format "http://0.0.0.0:3000/login/%s/%s/%s"
-                                                                            email
-                                                                            123
-                                                                            "DEADBEEF")]
-                                                             (submit-button "Log me in!"))}))}]})
-                 (html5 (layout/base
-                         {:content
-                          (list [:h1 "Login token on its way!"]
-                                [:p "We just sent a login link to your email
-                                address. It should be with you shortly. The
-                                link is only valid for 20 minutes, so please
-                                check your mail."])})))
+                 (if-let [user (j/query (some-> config :db :spec)
+                                        ["select id from users where email = ?" email])]
+                   (do
+                     (send-login-email config email)
+                     (html5 (layout/base
+                             {:content
+                              (list [:h1 "Login token on its way!"]
+                                    [:p "We just sent a login link to the
+                                    email address you specified. It should be
+                                    with you shortly. The link is only valid
+                                    for 20 minutes, so please check your
+                                    mail."])})))
+                   (html5 (layout/base
+                           {:content
+                            (list [:h1 "User not found"]
+                                  [:p "I'm afraid a user with that email
+                                  address could not be found in our database.
+                                  Would you like to try again?"])}))))
            (GET "/:email/:ts/:hmac" [email ts hmac]
                 (html5 (layout/base
                         {:content [:dl

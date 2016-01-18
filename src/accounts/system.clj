@@ -1,5 +1,7 @@
 (ns accounts.system
-  (:require [clojure.java.io :as io]
+  (:require [accounts.endpoint.example :refer [example-endpoint]]
+            [accounts.endpoint.login :refer [login-endpoint]]
+            [clojure.java.io :as io]
             [com.stuartsierra.component :as component]
             [duct.component.endpoint :refer [endpoint-component]]
             [duct.component.handler :refer [handler-component]]
@@ -10,9 +12,7 @@
             [meta-merge.core :refer [meta-merge]]
             [ring.component.jetty :refer [jetty-server]]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
-            [ring.middleware.webjars :refer [wrap-webjars]]
-            [accounts.endpoint.login :refer [login-endpoint]]
-            [accounts.endpoint.example :refer [example-endpoint]]))
+            [ring.middleware.webjars :refer [wrap-webjars]]))
 
 (def base-config
   {:app {:middleware [[wrap-not-found :not-found]
@@ -37,5 +37,5 @@
          {:http [:app]
           :app  [:example :login]
           :ragtime [:db]
-          :login []
+          :login [:db]
           :example [:db]}))))

@@ -16,3 +16,14 @@ To play with hikaricp & yesql in REPL:
                                      :moniker "Desmon Tutu"}))
 #+END_SRC
 
+
+#+BEGIN_SRC clojure
+  (def db {:classname   "org.sqlite.JDBC"
+           :subprotocol "sqlite"
+           :subname     "db/dev.sqlite"})
+
+
+  (require '[clojure.java.jdbc :as j])
+#+END_SRC
+
+* TODO Install prone?
