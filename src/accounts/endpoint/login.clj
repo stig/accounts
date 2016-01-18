@@ -36,7 +36,8 @@
   (context "/login" []
            (POST "/" [email]
                  (if-let [user (j/query (some-> config :db :spec)
-                                        ["select id from users where email = ?" email])]
+                                        ["select id from users where email = ?" email]
+                                        :result-set-fn first)]
                    (do
                      (send-login-email config email)
                      (html5 (layout/base
