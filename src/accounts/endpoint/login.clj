@@ -26,18 +26,24 @@
                          :content (html5
                                    (layout/base
                                     {:content
-                                     (form-to [:post (format "http://0.0.0.0:3000/login/%s/%s/%s"
-                                                             email
-                                                             123
-                                                             "DEADBEEF")]
-                                              (submit-button "Log me in!"))}))}]}))
+                                     (list
+                                      [:p "Please click the below link to continue logging in:"]
+                                      [:p (format "http://0.0.0.0:3000/login/%s/%s/%s"
+                                                  email
+                                                  123
+                                                  "DEADBEEF")
+                                       (submit-button "Log me in!")])}))}]}))
+
+(defn- find-by-email
+  [{{spec :spec} :db} email]
+  (j/query spec
+           ["select id from users where email = ?" email]
+           :result-set-fn first))
 
 (defn login-endpoint [config]
   (context "/login" []
            (POST "/" [email]
-                 (if-let [user (j/query (some-> config :db :spec)
-                                        ["select id from users where email = ?" email]
-                                        :result-set-fn first)]
+                 (if-let [user (find-by-email config email)]
                    (do
                      (send-login-email config email)
                      (html5 (layout/base
