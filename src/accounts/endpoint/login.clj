@@ -1,6 +1,6 @@
 (ns accounts.endpoint.login
-  (:require [accounts.layout :as layout]
-            [clojure.java.jdbc :as j]
+  (:require [accounts.component.users :as users]
+            [accounts.layout :as layout]
             [compojure.core :refer :all]
             [hiccup
              [form :refer [email-field form-to submit-button]]
@@ -34,16 +34,10 @@
                                                   "DEADBEEF")
                                        (submit-button "Log me in!")])}))}]}))
 
-(defn- find-by-email
-  [{{spec :spec} :db} email]
-  (j/query spec
-           ["select id from users where email = ?" email]
-           :result-set-fn first))
-
 (defn login-endpoint [config]
   (context "/login" []
            (POST "/" [email]
-                 (if-let [user (find-by-email config email)]
+                 (if-let [user (users/find-by-email config email)]
                    (do
                      (send-login-email config email)
                      (html5 (layout/base
