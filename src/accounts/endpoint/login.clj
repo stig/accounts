@@ -1,6 +1,7 @@
 (ns accounts.endpoint.login
-  (:require [accounts.component.users :as users]
-            [accounts.layout :as layout]
+  (:require [accounts
+             [layout :as layout]
+             [users :as users]]
             [compojure.core :refer :all]
             [hiccup
              [form :refer [email-field form-to submit-button]]
@@ -37,7 +38,7 @@
 (defn login-endpoint [config]
   (context "/login" []
            (POST "/" [email]
-                 (if-let [user (users/find-by-email config email)]
+                 (if-let [user (users/find-by-email (:db config) email)]
                    (do
                      (send-login-email config email)
                      (html5 (layout/base

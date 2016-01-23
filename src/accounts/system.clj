@@ -1,6 +1,5 @@
 (ns accounts.system
-  (:require [accounts.component.users :refer [users]]
-            [accounts.endpoint
+  (:require [accounts.endpoint
              [example :refer [example-endpoint]]
              [login :refer [login-endpoint]]]
             [clojure.java.io :as io]
@@ -35,7 +34,6 @@
          :app  (handler-component (:app config))
          :http (jetty-server (:http config))
          :db   (hikaricp (:db config))
-         :users (users)
          :ragtime (ragtime (:ragtime config))
          :login (endpoint-component login-endpoint)
          :example (endpoint-component example-endpoint))
@@ -43,6 +41,5 @@
          {:http [:app]
           :app  [:example :login]
           :ragtime [:db]
-          :users [:db]
           :login [:db]
           :example [:db]}))))
