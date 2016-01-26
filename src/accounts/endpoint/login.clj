@@ -18,8 +18,8 @@
              (submit-button :submit)))))
 
 
-(defn- send-login-email [config email]
-  (send-message (:smtp config)
+(defn- send-login-email [smtp-config email]
+  (send-message smtp-config
                 {:from "accounts@superloopy.io"
                  :to email
                  :subject "One-Time Login URL"
@@ -59,12 +59,13 @@
                 [:dt :hmac]
                 [:dd hmac]]))
 
-(defn login-endpoint [config]
+(defn login-endpoint [{{spec :spec} :db
+                       smtp-config :smtp}]
   (context "/login" []
            (POST "/" [email]
-                 (if-let [user (users/find-by-email (:db config) email)]
+                 (if-let [user (users/find-by-email spec email)]
                    (do
-                     (send-login-email config email)
+                     (send-login-email smtp-config email)
                      (login-form-success))
                    (login-form-not-found)))
 
