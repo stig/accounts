@@ -7,14 +7,14 @@
             [eftest.runner :as eftest]
             [meta-merge.core :refer [meta-merge]]
             [reloaded.repl :refer [system init start stop go reset]]
-            [ring.middleware.stacktrace :refer [wrap-stacktrace]]
+            [prone.middleware :as prone]
             [duct.component.ragtime :as ragtime]
             [duct.component.figwheel :as figwheel]
             [accounts.config :as config]
             [accounts.system :as system]))
 
 (def dev-config
-  {:app {:middleware [wrap-stacktrace]}
+  {:app {:middleware [prone/wrap-exceptions]}
    :figwheel
    {:css-dirs ["resources/accounts/public/css"]
     :builds   [{:source-paths ["src" "dev"]
