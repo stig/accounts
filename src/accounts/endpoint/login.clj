@@ -2,10 +2,10 @@
   (:require [accounts
              [layout :as layout]
              [users :as users]]
+            [accounts.component.mailer :refer [mail]]
             [compojure.core :refer :all]
             [hiccup
              [form :refer :all]]
-            [postal.core :refer [send-message]]
             [ring.util.anti-forgery :refer [anti-forgery-field]]))
 
 (defn- login-form []
@@ -18,21 +18,18 @@
              (submit-button :submit)))))
 
 
-(defn- send-login-email [smtp-config email]
-  (send-message smtp-config
-                {:from "accounts@superloopy.io"
-                 :to email
-                 :subject "One-Time Login URL"
-                 :body [{:type "text/html"
-                         :content
-                         (layout/base
-                          (list
-                           [:p "Please click the below link to continue logging in:"]
-                           [:p (format "http://0.0.0.0:3000/login/%s/%s/%s"
-                                       email
-                                       123
-                                       "DEADBEEF")
-                            (submit-button "Log me in!")]))}]}))
+
+(defn- send-login-email [mailer email]
+  (mail mailer email "One-time login URL"
+        [{:type "text/html"
+          :content
+          (layout/base
+           (list
+            [:p "Please click the below link to continue logging in:"]
+            [:p (format "http://0.0.0.0:3000/login/%s/%s/%s"
+                        email
+                        123
+                        "DEADBEEF")]))}]))
 
 (defn- login-form-success []
   (layout/base
@@ -60,12 +57,12 @@
                 [:dd hmac]]))
 
 (defn login-endpoint [{{spec :spec} :db
-                       smtp-config :smtp}]
+                       mailer :mailer}]
   (context "/login" []
            (POST "/" [email]
                  (if-let [user (users/find-by-email spec email)]
                    (do
-                     (send-login-email smtp-config email)
+                     (send-login-email mailer email)
                      (login-form-success))
                    (login-form-not-found)))
 
