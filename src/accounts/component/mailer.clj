@@ -11,8 +11,8 @@
   component/Lifecycle
   (start [this] this)
   (stop [this] this)
-  (mail [this to subject body]
-    (send-message (:smtp-config this)
+  (mail [{smtp-config :smtp-config} to subject body]
+    (send-message smtp-config
                   {:from "accounts@superloopy.io"
                    :to to
                    :subject subject
