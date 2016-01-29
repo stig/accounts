@@ -21,15 +21,11 @@
 
 (defn- send-login-email [mailer email]
   (mail mailer email "One-time login URL"
-        [{:type "text/html"
-          :content
-          (layout/base
-           (list
-            [:p "Please click the below link to continue logging in:"]
-            [:p (format "http://0.0.0.0:3000/login/%s/%s/%s"
-                        email
-                        123
-                        "DEADBEEF")]))}]))
+        (str "Please click the below link to continue logging in:\n\n"
+             (format "http://0.0.0.0:3000/login/%s/%s/%s"
+                     email
+                     123
+                     "DEADBEEF"))))
 
 (defn- login-form-success []
   (layout/base
