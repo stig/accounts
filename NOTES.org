@@ -26,4 +26,4 @@ To play with hikaricp & yesql in REPL:
   (require '[clojure.java.jdbc :as j])
 #+END_SRC
 
-* TODO Install prone?
+* TODO Move =wrap-params= and =wrap-anti-forgery= to system.clj
