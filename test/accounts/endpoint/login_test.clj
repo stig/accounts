@@ -55,12 +55,8 @@
               user-id (add db-spec {:email email :moniker email})]
           (-> (session handler)
               (visit "/login")
-              debug ;; #((prn %) %)
-              ;;              (prn email)
-                                        ;              prn
               (fill-in "Email:" email)
               (press "submit")
-                                        ;             prn
               (has (some-text? "Login token on its way!")
                    "Successful message displayed on page"))))
 
