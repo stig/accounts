@@ -1,9 +1,10 @@
 (ns accounts.endpoint.login-test
-  (:require [accounts.component.mailer :refer [stub-mailer]]
+  (:require [accounts
+             [system :refer [base-config]]
+             [users :refer [add]]]
+            [accounts.component.mailer :refer [stub-mailer]]
             [accounts.endpoint.login :refer :all]
-            [accounts.system :refer [base-config]]
             [clojure.test :refer :all]
-            [meta-merge.core :refer [meta-merge]]
             [com.stuartsierra.component :as component]
             [duct.component
              [endpoint :refer [endpoint-component]]
@@ -12,7 +13,7 @@
             [kerodon
              [core :refer :all]
              [test :refer :all]]
-            [clojure.pprint :refer [pprint]]))
+            [meta-merge.core :refer [meta-merge]]))
 
 (def config {:db {:uri "jdbc:sqlite::memory:"}})
 
@@ -45,5 +46,22 @@
             (press "submit")
             (has (some-text? "User not found")
                  "Couldn't find non-existing user. Phew!")))
+
+      (testing "login success"
+        ;; We don't support registering yet, so manually add a test user
+        ;; before the login attempt.
+        (let [email (str (gensym) "@example.com")
+              db-spec (-> system :db :spec)
+              user-id (add db-spec {:email email :moniker email})]
+          (-> (session handler)
+              (visit "/login")
+              debug ;; #((prn %) %)
+              ;;              (prn email)
+                                        ;              prn
+              (fill-in "Email:" email)
+              (press "submit")
+                                        ;             prn
+              (has (some-text? "Login token on its way!")
+                   "Successful message displayed on page"))))
 
       (finally (component/stop system)))))
