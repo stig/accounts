@@ -14,6 +14,7 @@
     [:h1 "Login"]
     (form-to [:post "/login"]
              (anti-forgery-field)
+             (label :email "Email:")
              (email-field :email)
              (submit-button :submit)))))
 

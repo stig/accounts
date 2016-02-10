@@ -28,12 +28,22 @@
           :ragtime [:db]}))))
 
 (deftest smoke-test
-  (testing "login page exists"
-    (let [system (component/start (test-system config))
-          handler (some-> system :login :routes)]
-      (try
-        (migrate (:ragtime system))
+  (let [system (component/start (test-system config))
+        handler (some-> system :login :routes)]
+    (try
+      (migrate (:ragtime system))
+
+      (testing "login page exists"
         (-> (session handler)
             (visit "/login")
-            (has (status? 200) "page exists"))
-        (finally (component/stop system))))))
+            (has (status? 200) "page exists")))
+
+      (testing "bad email not found"
+        (-> (session handler)
+            (visit "/login")
+            (fill-in "Email:" "non-existing-email")
+            (press "submit")
+            (has (some-text? "User not found")
+                 "Couldn't find non-existing user. Phew!")))
+
+      (finally (component/stop system)))))
