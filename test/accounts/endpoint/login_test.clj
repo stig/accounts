@@ -44,8 +44,8 @@
             (visit "/login")
             (fill-in "Email:" "notvalid@example.com")
             (press "submit")
-            (has (some-text? "User not found")
-                 "Couldn't find non-existing user. Phew!")))
+            (within [:h1]
+                    (has (text? "User not found")))))
 
       (testing "login success"
         ;; We don't support registering yet, so manually add a test user
@@ -57,7 +57,7 @@
               (visit "/login")
               (fill-in "Email:" email)
               (press "submit")
-              (has (some-text? "Login token on its way!")
-                   "Successful message displayed on page"))))
+              (within [:h1]
+                      (has (text? "Login token on its way!"))))))
 
       (finally (component/stop system)))))
