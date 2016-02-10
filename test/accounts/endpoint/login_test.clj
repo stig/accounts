@@ -41,7 +41,7 @@
       (testing "bad email not found"
         (-> (session handler)
             (visit "/login")
-            (fill-in "Email:" "non-existing-email")
+            (fill-in "Email:" "notvalid@example.com")
             (press "submit")
             (has (some-text? "User not found")
                  "Couldn't find non-existing user. Phew!")))
