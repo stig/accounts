@@ -6,15 +6,10 @@
             [clojure.java.io :as io]
             [com.stuartsierra.component :as component]
             [duct.middleware.errors :refer [wrap-hide-errors]]
-            [meta-merge.core :refer [meta-merge]]
-            [ring.middleware
-             [anti-forgery :refer [wrap-anti-forgery]]
-             [params :refer [wrap-params]]]))
+            [meta-merge.core :refer [meta-merge]]))
 
 (def prod-config
-  {:app {:middleware     [wrap-params
-                          wrap-anti-forgery
-                          [wrap-hide-errors :internal-error]]
+  {:app {:middleware     [[wrap-hide-errors :internal-error]]
          :internal-error (io/resource "errors/500.html")}})
 
 (def config
