@@ -15,7 +15,7 @@
              [core :refer :all]
              [test :refer :all]]
             [meta-merge.core :refer [meta-merge]]
-            [clojure.core.async :refer [<!!]]))
+            [clojure.core.async :refer [<!! >!!]]))
 
 (def config {:db {:uri "jdbc:sqlite::memory:"}})
 
@@ -56,6 +56,7 @@
         ;; before the login attempt.
         (let [email (str (gensym) "@example.com")
               db-spec (-> system :db :spec)
+              channel (-> system :mailer :channel)
               user-id (add db-spec {:email email :moniker email})]
           (-> (session handler)
               (visit "/login")
@@ -64,10 +65,17 @@
               (within [:h1]
                       (has (text? "Login token on its way!"))))
 
-          (let [m (<!! (-> system :mailer :channel))]
+          (let [m (<!! channel)]
             (is (= email (:to m)))
             (is (= "One-time login URL" (:subject m)))
             ;;; TODO check link in body
-            )))
+            )
+
+          ;; We want to check there's no more messages on the channel, however
+          ;; <!! blocks if there's no message, so write a sentinel and make
+          ;; sure that's what we get back.
+          (let [sentinel (keyword (gensym))]
+            (is (= sentinel (do (>!! channel sentinel)
+                                (<!! channel)))))))
 
       (finally (component/stop system)))))
