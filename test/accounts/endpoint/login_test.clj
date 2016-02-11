@@ -13,7 +13,8 @@
             [kerodon
              [core :refer :all]
              [test :refer :all]]
-            [meta-merge.core :refer [meta-merge]]))
+            [meta-merge.core :refer [meta-merge]]
+            [duct.component.handler :refer [handler-component]]))
 
 (def config {:db {:uri "jdbc:sqlite::memory:"}})
 
@@ -23,14 +24,16 @@
          :ragtime (ragtime (:ragtime config))
          :login (endpoint-component login-endpoint)
          :db (hikaricp (:db config))
-         :mailer (stub-mailer))
+         :mailer (stub-mailer)
+         :app (handler-component (:app config)))
         (component/system-using
          {:login [:db :mailer]
+          :app [:login]
           :ragtime [:db]}))))
 
 (deftest smoke-test
   (let [system (component/start (test-system config))
-        handler (some-> system :login :routes)]
+        handler (some-> system :app :handler)]
     (try
       (migrate (:ragtime system))
 
