@@ -5,10 +5,7 @@
 
 (defmulti mail (fn [x & _] (class x)))
 
-(defrecord SmtpMailer [smtp-config]
-  component/Lifecycle
-  (start [this] this)
-  (stop [this] this))
+(defrecord SmtpMailer [smtp-config])
 
 (defmethod mail SmtpMailer [{:keys [smtp-config]} to subject body]
   (send-message smtp-config
