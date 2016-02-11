@@ -8,13 +8,14 @@
             [com.stuartsierra.component :as component]
             [duct.component
              [endpoint :refer [endpoint-component]]
+             [handler :refer [handler-component]]
              [hikaricp :refer [hikaricp]]
              [ragtime :refer [migrate ragtime]]]
             [kerodon
              [core :refer :all]
              [test :refer :all]]
             [meta-merge.core :refer [meta-merge]]
-            [duct.component.handler :refer [handler-component]]))
+            [clojure.core.async :refer [<!!]]))
 
 (def config {:db {:uri "jdbc:sqlite::memory:"}})
 
@@ -61,6 +62,12 @@
               (fill-in "Email:" email)
               (press "submit")
               (within [:h1]
-                      (has (text? "Login token on its way!"))))))
+                      (has (text? "Login token on its way!"))))
+
+          (let [m (<!! (-> system :mailer :channel))]
+            (is (= email (:to m)))
+            (is (= "One-time login URL" (:subject m)))
+            ;;; TODO check link in body
+            )))
 
       (finally (component/stop system)))))
