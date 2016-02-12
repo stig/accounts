@@ -20,9 +20,7 @@
 
 (defrecord StubMailer [channel]
   component/Lifecycle
-  (start [this]
-    (assoc this :channel (chan 32)))
-
+  (start [this] this)
   (stop [this]
     (close! (:channel this))
     (dissoc this :channel)))
