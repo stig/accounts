@@ -1,0 +1,121 @@
+* What is this?
+
+  This is a _toy & learning_ application. I use it to learn Clojure web
+  development. Do not assume that I know what I'm doing. It is probably not
+  safe to use this code.
+
+  This repo is  only public for two reasons:
+  1. I'm too cheap to shell out for a private GitHub account, but want to
+     access the repo from different machines.
+  2. I occassionally ask for help with things and need to point to the repo.
+
+  Specifically, what I'm toying with here is:
+  1. Building webapps in Clojure, but more specifically using
+  2. [[https://github.com/weavejester/duct][Duct]] by James Reeves, and 
+  3. Some ideas around [[http://www.superloopy.io/articles/2014/passwordless-registration-and-login.html][passwordless registration and login]].
+
+
+** Developing
+
+*** Setup
+
+    When you first clone this repository, run:
+
+    #+BEGIN_SRC sh
+      lein setup
+    #+END_SRC
+
+    This will create files for local configuration, and prep your system for
+    the project.
+
+*** Environment
+
+    To begin developing, start with a REPL.
+
+    #+BEGIN_SRC sh
+    lein repl
+    #+END_SRC
+
+    Run `go` to initiate and start the system.
+
+    #+BEGIN_SRC clojure
+      user=> (go)
+      :started
+    #+END_SRC
+
+    By default this creates a web server at <http://localhost:3000>.
+
+    When you make changes to your source files, use `reset` to reload any
+    modified files and reset the server. Changes to CSS or ClojureScript files
+    will be hot-loaded into the browser.
+
+    #+BEGIN_SRC clojure
+      user=> (reset)
+      :reloading (...)
+      :resumed
+    #+END_SRC
+
+    If you want to access a ClojureScript REPL, make sure that the site is
+    loaded in a browser and run:
+
+    #+BEGIN_SRC clojure
+      user=> (cljs-repl)
+      Waiting for browser connection... Connected.
+      To quit, type: :cljs/quit
+      nil
+      cljs.user=>
+    #+END_SRC
+
+*** Testing
+
+    Testing is fastest through the REPL, as you avoid environment startup
+    time.
+
+    #+BEGIN_SRC clojure
+      user=> (test)
+      ...
+    #+END_SRC
+
+    But you can also run tests through Leiningen.
+
+    #+BEGIN_SRC sh
+      lein test
+    #+END_SRC
+
+*** Migrations
+
+    Migrations are handled by [ragtime][]. Migration files are stored in the
+    =resources/migrations= directory, and are applied in alphanumeric order.
+
+    To update the database to the latest migration, open the REPL and run:
+
+    #+BEGIN_SRC clojure
+      user=> (migrate)
+      Applying 20150815144312-create-users
+      Applying 20150815145033-create-posts
+    #+END_SRC
+
+    To rollback the last migration, run:
+
+    #+BEGIN_SRC clojure
+      user=> (rollback)
+      Rolling back 20150815145033-create-posts
+    #+END_SRC
+
+    Note that the system needs to be setup with ~(init)~ or ~(go)~ before
+    migrations can be applied.
+
+*** Generators
+
+    This project has several [[https://github.com/weavejester/lein-generate][generators]] to help you create files.
+
+    - =lein gen endpoint <name>= to create a new endpoint
+    - =lein gen component <name>= to create a new component
+
+** Deploying
+
+   FIXME: steps to deploy
+
+** Legal
+
+   Copyright © 2015 Stig Brautaset
