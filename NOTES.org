@@ -1,29 +1,80 @@
-#+OPTIONS: toc:nil
+* Tasks
+  
+  I've decided to do these things for now. That doesn't mean that they're not
+  open for change later. This is a _toy & learning_ project, after all.
 
-To play with hikaricp & yesql in REPL:
+** TODO Produce actual [[https://en.wikipedia.org/wiki/Hash-based_message_authentication_code][HMAC]]
 
-#+BEGIN_SRC clojure
-  (require '[yesql.core :refer :all])
-  (require '[com.stuartsierra.component :as component])
-  (require '[duct.component.hikaricp :refer [hikaricp]])
-  (def db (component/start (hikaricp {:uri "jdbc:sqlite:db/dev.sqlite"})))
-  (def spec {:connection (:spec db)})
+   What goes into this should be:
+   - user-id :: The id of the user attempting to log in.
+   - last login :: Specific to the user, this part guards against replay
+                   attacks. Using a HMAC to log in automatically invalidates it
+                   so it cannot be used again.
+   - server epoch :: The current epoch timestamp at the time of initiating the
+                     login request. This is used to enforce a "freshness
+                     guarantee" on the HMAC.
+   - server secret :: A secret only the server knows. *Must* be invididual for
+                      each environment / application, but must be shared across
+                      servers handling the same URL.
 
-  (defqueries "accounts/sql/users.sql" spec)
+   Note that the user does not choose any of those. (Except indirectly the
+   epoch.) Thus there is little scope for finding collisions.
 
-  (def last-insert-rowid (keyword "last_insert_rowid()"))
-  (last-insert-rowid (insert-user<! {:email (gensym)
-                                     :moniker "Desmon Tutu"}))
-#+END_SRC
+** TODO Create URLs containing HMAC
+
+   Create a URL with the proper HMAC from above that can be used to finish the
+   login. Update the email body to use this URL, and check for that URL in the
+   body of the email.
+
+   This URL should have the following parts:
+   - user-id
+   - timestamp
+   - hmac
+
+   Specifically, we never disclose the user's last login, nor the server
+   secret. We only use these to create and verify the HMAC. This way we don't
+   have to create a table of tokens waiting for verification.
+
+** TODO Ability to complete login
+
+   When someone clicks on a login link we should do the following:
+   - Check if the provided timestamp is recent enough. (Let's keep this
+     configurable on the server.) If not, throw an error.
+   - Check if the user exists. If not, throw an error. Obviously.
+   - Create a new HMAC using these details:
+     | What                 | from Where     |
+     |----------------------+----------------|
+     | user-id              | request        |
+     | last login timestamp | db user record |
+     | timestamp            | request        |
+     | server secret        | server config  |
+   - Compare the new HMAC to the one from the request. If it does not match,
+     throw an error. Otherwise, it was a valid request, so present a form
+     asking for the user to confirm that they want to log in. Optionally, offer
+     them to name the device they're logging in from.
+
+** TODO Record each successful login
+
+   We don't want to store last login in the users table. Let's have a =logins=
+   table that stores the time(s) of every successful login. It should contain
+   the following fields:
+
+   - User id
+   - Login initiated timestamp (from request)
+   - Login completed timestamp
+   - Name of device they're logging in from, if provided.
+
+** TODO Decide on scheme for opaque user ids
+
+   This could be a UUID, or possibly MD5(salt+email). One benefit of the latter
+   is that you cannot attempt to guess how long a user has been on the site
+   from their user id.
+
+* Open questions
+
+  I have no idea about these things yet.
+
+** TODO How would people update their email address?
+** TODO Should people be able to use phone numbers instead of email?
 
 
-#+BEGIN_SRC clojure
-  (def db {:classname   "org.sqlite.JDBC"
-           :subprotocol "sqlite"
-           :subname     "db/dev.sqlite"})
-
-
-  (require '[clojure.java.jdbc :as j])
-#+END_SRC
-
-* TODO Move =wrap-params= and =wrap-anti-forgery= to system.clj
