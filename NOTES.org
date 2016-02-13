@@ -42,7 +42,7 @@
      configurable on the server.) If not, throw an error.
    - Check if the user exists. If not, throw an error. Obviously.
    - Create a new HMAC using these details:
-     | What                 | from Where     |
+     | What                 | From           |
      |----------------------+----------------|
      | user-id              | request        |
      | last login timestamp | db user record |
@@ -55,14 +55,18 @@
 
 ** TODO Record each successful login
 
-   We don't want to store last login in the users table. Let's have a =logins=
-   table that stores the time(s) of every successful login. It should contain
-   the following fields:
+   We don't want to store last login in the users table. Let's have an
+   append-only /logins/ table that stores the time(s) of every successful
+   login. It should contain the following fields:
 
    - User id
    - Login initiated timestamp (from request)
    - Login completed timestamp
    - Name of device they're logging in from, if provided.
+
+   Data from this table can be used to tweak the server timeout. It can also
+   be used for user support, or as an audit trail. If a user specifies a new
+   device we can flag that in an email to them.
 
 ** TODO Decide on scheme for opaque user ids
 
