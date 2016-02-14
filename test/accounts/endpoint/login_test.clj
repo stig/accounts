@@ -1,36 +1,26 @@
 (ns accounts.endpoint.login-test
   (:require [accounts
-             [system :refer [base-config]]
+             [system :refer [new-system]]
              [users :refer [add]]]
             [accounts.component.mailer :refer [stub-mailer]]
-            [accounts.endpoint.login :refer :all]
+            [clojure.core.async :refer [<!! >!!]]
             [clojure.test :refer :all]
             [com.stuartsierra.component :as component]
-            [duct.component
-             [endpoint :refer [endpoint-component]]
-             [handler :refer [handler-component]]
-             [hikaricp :refer [hikaricp]]
-             [ragtime :refer [migrate ragtime]]]
+            [duct.component.ragtime :refer [migrate]]
             [kerodon
              [core :refer :all]
-             [test :refer :all]]
-            [meta-merge.core :refer [meta-merge]]
-            [clojure.core.async :refer [<!! >!!]]))
+             [test :refer :all]]))
 
 (def config {:db {:uri "jdbc:sqlite::memory:"}})
 
 (defn test-system [config]
-  (let [config (meta-merge base-config config)]
-    (-> (component/system-map
-         :ragtime (ragtime (:ragtime config))
-         :login (endpoint-component login-endpoint)
-         :db (hikaricp (:db config))
-         :mailer (stub-mailer)
-         :app (handler-component (:app config)))
-        (component/system-using
-         {:login [:db :mailer]
-          :app [:login]
-          :ragtime [:db]}))))
+  (-> (new-system config)
+
+      ;; We don't want to start an actual server, so let's remove that
+      (dissoc :http)
+
+      ;; Don't actually send email: use our test mailer instead
+      (assoc :mailer (stub-mailer))))
 
 (deftest smoke-test
   (let [system (component/start (test-system config))
