@@ -55,16 +55,19 @@
 (defn login-endpoint [{users :users
                        mailer :mailer}]
   (context "/login" []
-           (POST "/" [email]
+           (POST "/" [email :as {{host "host"} :headers
+                                 scheme :scheme}]
                  (if-let [user (find-by-email users email)]
                    (let [timestamp (System/currentTimeMillis)
                          user-id (:id user)
                          last-login (:last-login user)]
                      (send-login-email mailer email
-                                       (format "http://0.0.0.0:3000/login/%s/%s/%s"
+                                       (format "%s://%s/login/%s/%s/%s"
+                                               (name scheme)
+                                               host
                                                user-id
                                                timestamp
-                                               (hmac "server-secret" user-id last-login timestamp)))
+                                               (hmac "server-secret" scheme host user-id last-login timestamp)))
                      (login-form-success))
                    (login-form-not-found)))
 
