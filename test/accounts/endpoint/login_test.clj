@@ -24,6 +24,9 @@
 
 (def system (test-system config))
 
+(defn channel []
+  (some-> system :mailer :channel))
+
 (defn handler [] (some-> system :app :handler))
 
 (defn my-fixture [f]
@@ -34,27 +37,32 @@
 
 (use-fixtures :once my-fixture)
 
+(defn- find-link [mail-body]
+  (re-find #"/login/\d+/\d+/[a-f0-9]+" mail-body))
+
 (deftest smoke-test
   (testing "login page exists"
     (-> (session (handler))
         (visit "/login")
         (has (status? 200) "page exists")))
 
-  (testing "bad email not found"
+  (testing "user not found - doesn't send email"
     (-> (session (handler))
         (visit "/login")
         (fill-in "Email:" "notvalid@example.com")
         (press "submit")
         (within [:h1]
-                (has (text? "User not found")))))
+                (has (text? "User not found"))))
 
-  (testing "login success"
+    (is (nil? (poll! (channel)))))
+
+  (testing "login success - sends email"
     ;; We don't support registering yet, so manually add a test user
     ;; before the login attempt.
     (let [email (str (gensym) "@example.com")
-          users (-> system :users)
           channel (-> system :mailer :channel)
           user-id (add users {:email email :moniker email})]
+
       (-> (session (handler))
           (visit "/login")
           (fill-in "Email:" email)
@@ -62,10 +70,12 @@
           (within [:h1]
                   (has (text? "Login token on its way!"))))
 
-      (let [m (<!! channel)]
+      ;; User got login message
+      (let [m (<!! (channel))
+            link (find-link (:body m))]
         (is (= email (:to m)))
         (is (= "One-time login URL" (:subject m)))
-            ;;; TODO check link in body
-        )
+        (is (not (nil? link))))
 
-      (is (nil? (poll! channel))))))
+      ;; No more messages on the channel
+      (is (nil? (poll! (channel)))))))
