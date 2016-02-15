@@ -5,7 +5,12 @@
             [accounts.layout :as layout]
             [compojure.core :refer :all]
             [hiccup.form :refer :all]
+            [pandect.algo.sha256 :refer [sha256-hmac]]
             [ring.util.anti-forgery :refer [anti-forgery-field]]))
+
+(defn- hmac [secret & key-parts]
+  (let [key (clojure.string/join "$" key-parts)]
+    (sha256-hmac key secret)))
 
 (defn- login-form []
   (layout/base
@@ -17,15 +22,10 @@
              (email-field :email)
              (submit-button :submit)))))
 
-
-
-(defn- send-login-email [mailer email]
+(defn- send-login-email [mailer email url]
   (mail mailer email "One-time login URL"
         (str "Please click the below link to continue logging in:\n\n"
-             (format "http://0.0.0.0:3000/login/%s/%s/%s"
-                     email
-                     123
-                     "DEADBEEF"))))
+             url)))
 
 (defn- login-form-success []
   (layout/base
@@ -57,8 +57,14 @@
   (context "/login" []
            (POST "/" [email]
                  (if-let [user (find-by-email users email)]
-                   (do
-                     (send-login-email mailer email)
+                   (let [timestamp (System/currentTimeMillis)
+                         user-id (:id user)
+                         last-login (:last-login user)]
+                     (send-login-email mailer email
+                                       (format "http://0.0.0.0:3000/login/%s/%s/%s"
+                                               user-id
+                                               timestamp
+                                               (hmac "server-secret" user-id last-login timestamp)))
                      (login-form-success))
                    (login-form-not-found)))
 
