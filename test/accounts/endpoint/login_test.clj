@@ -11,10 +11,6 @@
              [core :refer :all]
              [test :refer :all]]))
 
-(def config {:db {:uri "jdbc:sqlite::memory:"}})
-
-(defn handler [] (some-> system :app :handler))
-
 (defn test-system [config]
   (-> (new-system config)
 
@@ -24,7 +20,11 @@
       ;; Don't actually send email: use our test mailer instead
       (assoc :mailer (stub-mailer))))
 
+(def config {:db {:uri "jdbc:sqlite::memory:"}})
+
 (def system (test-system config))
+
+(defn handler [] (some-> system :app :handler))
 
 (defn my-fixture [f]
   (alter-var-root #'system (fn [x] (component/start x)))
