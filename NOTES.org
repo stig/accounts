@@ -1,5 +1,5 @@
 * Tasks
-  
+
   I've decided to do these things for now. That doesn't mean that they're not
   open for change later. This is a _toy & learning_ project, after all.
 
@@ -74,11 +74,24 @@
    is that you cannot attempt to guess how long a user has been on the site
    from their user id.
 
+** TODO Migrate from SQLite to PostgreSQL
+
+   This is likely to mainly have some challenges around tests. We may have to
+   beef up the test db component to create the db first.
+
 * Open questions
 
   I have no idea about these things yet.
 
+** TODO Is there a way to infer hostname?
+
+   When I'm connected to internet my local server answers to
+   http://0.0.0.0:3000/ -- however, when I'm not it ansers to
+   http://localhost:3000 -- is there a way to infer which from the running
+   process?
+
+   I note that the request has ={:headers {"host" "http://localhost:3000"}}=.
+   Is it safe to rely on this for our emails? Can it be spoofed?
+
 ** TODO How would people update their email address?
 ** TODO Should people be able to use phone numbers instead of email?
-
-
