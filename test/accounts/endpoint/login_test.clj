@@ -3,7 +3,7 @@
              [system :refer [new-system]]
              [users :refer [add]]]
             [accounts.component.mailer :refer [stub-mailer]]
-            [clojure.core.async :refer [<!! >!!]]
+            [clojure.core.async :refer [<!! >!! poll!]]
             [clojure.test :refer :all]
             [com.stuartsierra.component :as component]
             [duct.component.ragtime :refer [migrate]]
@@ -68,9 +68,4 @@
             ;;; TODO check link in body
         )
 
-      ;; We want to check there's no more messages on the channel, however
-      ;; <!! blocks if there's no message, so write a sentinel and make
-      ;; sure that's what we get back.
-      (let [sentinel (keyword (gensym))]
-        (is (= sentinel (do (>!! channel sentinel)
-                            (<!! channel))))))))
+      (is (nil? (poll! channel))))))
