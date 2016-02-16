@@ -56,7 +56,7 @@
 
     (is (nil? (poll! (channel)))))
 
-  (testing "login success - sends email"
+  (testing "login initiated - email sent"
     ;; We don't support registering yet, so manually add a test user
     ;; before the login attempt.
     (let [email (str (gensym) "@example.com")
@@ -71,11 +71,10 @@
                   (has (text? "Login token on its way!"))))
 
       ;; User got login message
-      (let [m (<!! (channel))
-            link (find-link (:body m))]
+      (let [m (<!! (channel))]
         (is (= email (:to m)))
         (is (= "One-time login URL" (:subject m)))
-        (is (not (nil? link))))
+        (is (not (nil? (find-link (:body m))))))
 
       ;; No more messages on the channel
       (is (nil? (poll! (channel)))))))
