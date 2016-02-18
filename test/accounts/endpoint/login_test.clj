@@ -77,4 +77,10 @@
         (is (not (nil? (find-link (:body m))))))
 
       ;; No more messages on the channel
-      (is (nil? (poll! (channel)))))))
+      (is (nil? (poll! (channel))))))
+
+  (testing "login link expired"
+    (-> (session (handler))
+        (visit "/login/1/666/deadbeef")
+        (within [:h1]
+                (has (text? "Login link expired"))))))

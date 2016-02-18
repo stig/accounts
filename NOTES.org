@@ -36,7 +36,7 @@
    have to create a table of tokens waiting for verification.
 
 ** DONE Remove example component
-** TODO Reject expired login links
+** DONE Reject expired login links
 
    We should reject expired login links, without doing any database hits.
 

@@ -42,11 +42,27 @@
          [:p "I'm afraid a user with that email address could not be found in
          our database. Would you like to try again?"])))
 
+(defn- login-link-expired []
+  (layout/base
+   (list [:h1 "Login link expired"]
+         [:p "Unfortunately the login link you attempted to use has expired."]
+         [:p "Do you want to try " [:a {:src "/login"} "login"] " again?"])))
+
+(defn- current-timestamp []
+  (System/currentTimeMillis))
+
+(defn- good-timestamp? [ts]
+  ;; timestamps are in milliseconds. Let's expire after 10 minutes.
+  (let [valid-duration (* 10 60 1000)
+        diff (- (current-timestamp) (Long/parseLong ts))]
+    (< diff valid-duration)))
+
 (defn- login-complete
   [id ts hmac]
-  ;; TODO add something to session to log people in
-  (layout/base
-   (list [:h1 "You are logged in!"])))
+  (if (good-timestamp? ts)
+    (layout/base
+     (list [:h1 "You are logged in!"]))
+    (login-link-expired)))
 
 (defn login-endpoint [{users :users
                        mailer :mailer}]
@@ -54,7 +70,7 @@
            (POST "/" [email :as {{host "host"} :headers
                                  scheme :scheme}]
                  (if-let [user (find-by-email users email)]
-                   (let [timestamp (System/currentTimeMillis)
+                   (let [timestamp (current-timestamp)
                          user-id (:id user)
                          last-login (:last-login user)]
                      (send-login-email mailer email
