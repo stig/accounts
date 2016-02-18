@@ -56,7 +56,7 @@
 
     (is (nil? (poll! (channel)))))
 
-  (testing "login initiated - email sent"
+  (testing "login initiated - email received"
     ;; We don't support registering yet, so manually add a test user
     ;; before the login attempt.
     (let [email (str (gensym) "@example.com")

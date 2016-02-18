@@ -42,15 +42,11 @@
          [:p "I'm afraid a user with that email address could not be found in
          our database. Would you like to try again?"])))
 
-(defn- login-confirmation-form
-  [email ts hmac]
-  (layout/base [:dl
-                [:dt :email]
-                [:dd email]
-                [:dt :ts]
-                [:dd ts]
-                [:dt :hmac]
-                [:dd hmac]]))
+(defn- login-complete
+  [id ts hmac]
+  ;; TODO add something to session to log people in
+  (layout/base
+   (list [:h1 "You are logged in!"])))
 
 (defn login-endpoint [{users :users
                        mailer :mailer}]
@@ -71,7 +67,7 @@
                      (login-form-success))
                    (login-form-not-found)))
 
-           (GET "/:email/:ts/:hmac" [email ts hmac]
-                (login-confirmation-form email ts hmac))
+           (GET "/:id/:ts/:hmac" [id ts hmac]
+                (login-complete id ts hmac))
 
            (GET "/" [] (login-form))))
