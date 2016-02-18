@@ -1,7 +1,7 @@
 (ns accounts.endpoint.login
   (:require [accounts.component
              [mailer :refer [mail]]
-             [users :refer [find-by-email]]]
+             [users :refer [find-by-email find-by-id]]]
             [accounts.layout :as layout]
             [compojure.core :refer :all]
             [hiccup.form :refer :all]
@@ -58,10 +58,14 @@
     (< min (Long/parseLong ts) max)))
 
 (defn- login-complete
-  [id ts hmac]
+  [users id ts hmac]
   (if (good-timestamp? ts)
-    (layout/base
-     (list [:h1 "You are logged in!"]))
+    (if-let [user (find-by-id users id)]
+      (layout/base
+       (list [:h1 "You are logged in!"]))
+      (layout/base
+       (list [:h1 "User not found"]
+             [:p "No user was found with that user id."])))
     (login-link-expired)))
 
 (defn login-endpoint [{users :users
@@ -84,6 +88,6 @@
                    (login-form-not-found)))
 
            (GET "/:id/:ts/:hmac" [id ts hmac]
-                (login-complete id ts hmac))
+                (login-complete users id ts hmac))
 
            (GET "/" [] (login-form))))

@@ -88,7 +88,12 @@
     (-> (session (handler))
         (visit (format "/login/1/%d/deadbeef" (+ (System/currentTimeMillis) 1000)))
         (within [:h1]
-                (has (text? "Login link expired")))))
+                (has (text? "Login link expired"))))
+
+    (-> (session (handler))
+        (visit (format "/login/666/%d/deadbeef" (- (System/currentTimeMillis) 1000)))
+        (within [:h1]
+                (has (text? "User not found")))))
 
   (testing "login link incorrect shape"
     (-> (session (handler))
