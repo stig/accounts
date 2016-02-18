@@ -20,13 +20,14 @@
 
 (defrecord StubMailer [channel]
   component/Lifecycle
-  (start [this] this)
+  (start [this]
+    (assoc this :channel (chan 32)))
   (stop [this]
     (close! (:channel this))
-    (dissoc this :channel)))
+    (assoc this :channel nil)))
 
 (defmethod mail StubMailer [{:keys [channel]} to subject body]
   (>!! channel {:to to :subject subject :body body}))
 
 (defn stub-mailer []
-  (->StubMailer (chan 32)))
+  (->StubMailer nil))
