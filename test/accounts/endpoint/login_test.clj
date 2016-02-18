@@ -79,9 +79,14 @@
       ;; No more messages on the channel
       (is (nil? (poll! (channel))))))
 
-  (testing "login link expired"
+  (testing "login failed"
     (-> (session (handler))
         (visit "/login/1/666/deadbeef")
+        (within [:h1]
+                (has (text? "Login link expired"))))
+
+    (-> (session (handler))
+        (visit (format "/login/1/%d/deadbeef" (+ (System/currentTimeMillis) 1000)))
         (within [:h1]
                 (has (text? "Login link expired")))))
 

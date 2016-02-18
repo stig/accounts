@@ -45,7 +45,7 @@
 (defn- login-link-expired []
   (layout/base
    (list [:h1 "Login link expired"]
-         [:p "Unfortunately the login link you attempted to use has expired."]
+         [:p "Unfortunately the login link you used has expired."]
          [:p "Do you want to try " [:a {:src "/login"} "login"] " again?"])))
 
 (defn- current-timestamp []
@@ -53,9 +53,9 @@
 
 (defn- good-timestamp? [ts]
   ;; timestamps are in milliseconds. Let's expire after 10 minutes.
-  (let [valid-duration (* 10 60 1000)
-        diff (- (current-timestamp) (Long/parseLong ts))]
-    (< diff valid-duration)))
+  (let [max (current-timestamp)
+        min (- max (* 10 60 1000))]
+    (< min (Long/parseLong ts) max)))
 
 (defn- login-complete
   [id ts hmac]
