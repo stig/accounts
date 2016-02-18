@@ -3,7 +3,7 @@
   I've decided to do these things for now. That doesn't mean that they're not
   open for change later. This is a _toy & learning_ project, after all.
 
-** TODO Produce actual [[https://en.wikipedia.org/wiki/Hash-based_message_authentication_code][HMAC]]
+** DONE Produce actual [[https://en.wikipedia.org/wiki/Hash-based_message_authentication_code][HMAC]]
 
    What goes into this should be:
    - user-id :: The id of the user attempting to log in.
@@ -20,7 +20,7 @@
    Note that the user does not choose any of those. (Except indirectly the
    epoch.) Thus there is little scope for finding collisions.
 
-** TODO Create URLs containing HMAC
+** DONE Create URLs containing HMAC
 
    Create a URL with the proper HMAC from above that can be used to finish the
    login. Update the email body to use this URL, and check for that URL in the
@@ -36,6 +36,11 @@
    have to create a table of tokens waiting for verification.
 
 ** DONE Remove example component
+** TODO Reject expired login links
+
+   We should reject expired login links, without doing any database hits.
+
+** TODO Reject login links with invalid hmac
 ** TODO Ability to complete login
 
    When someone clicks on a login link we should do the following:
