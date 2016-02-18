@@ -83,4 +83,17 @@
     (-> (session (handler))
         (visit "/login/1/666/deadbeef")
         (within [:h1]
-                (has (text? "Login link expired"))))))
+                (has (text? "Login link expired")))))
+
+  (testing "login link incorrect shape"
+    (-> (session (handler))
+        (visit "/login/1")
+        (has (status? 404)))
+
+    (-> (session (handler))
+        (visit "/login/1/2")
+        (has (status? 404)))
+
+    (-> (session (handler))
+        (visit "/login/1/2/3/4")
+        (has (status? 404)))))
