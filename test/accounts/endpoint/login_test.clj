@@ -40,6 +40,12 @@
 (defn- find-link [mail-body]
   (re-find #"/login/\d+/\d+/[a-f0-9]+" mail-body))
 
+(defn- future-timestamp []
+  (+ (System/currentTimeMillis) 1000))
+
+(defn- good-timestamp []
+  (- (System/currentTimeMillis) 1000))
+
 (deftest smoke-test
   (testing "login page exists"
     (-> (session (handler))
@@ -86,12 +92,12 @@
                 (has (text? "Login link expired"))))
 
     (-> (session (handler))
-        (visit (format "/login/1/%d/deadbeef" (+ (System/currentTimeMillis) 1000)))
+        (visit (format "/login/1/%d/deadbeef" (future-timestamp)))
         (within [:h1]
                 (has (text? "Login link expired"))))
 
     (-> (session (handler))
-        (visit (format "/login/666/%d/deadbeef" (- (System/currentTimeMillis) 1000)))
+        (visit (format "/login/666/%d/deadbeef" (good-timestamp)))
         (within [:h1]
                 (has (text? "User not found")))))
 
