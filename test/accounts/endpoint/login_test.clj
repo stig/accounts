@@ -85,19 +85,24 @@
       ;; No more messages on the channel
       (is (nil? (poll! (channel))))))
 
-  (testing "login failed"
+  (testing "login failed - bad timestamps"
     (-> (session (handler))
         (visit "/login/1/666/deadbeef")
         (within [:h1]
                 (has (text? "Login link expired"))))
 
     (-> (session (handler))
-        (visit (format "/login/1/%d/deadbeef" (future-timestamp)))
+        (visit (format "/login/1/%s/deadbeef" (future-timestamp)))
         (within [:h1]
                 (has (text? "Login link expired"))))
 
     (-> (session (handler))
-        (visit (format "/login/666/%d/deadbeef" (good-timestamp)))
+        (visit "/login/1/bad-timestamp/deadbeef")
+        (has (status? 404))))
+
+  (testing "login failed - user not found"
+    (-> (session (handler))
+        (visit (format "/login/666/%s/deadbeef" (good-timestamp)))
         (within [:h1]
                 (has (text? "User not found")))))
 

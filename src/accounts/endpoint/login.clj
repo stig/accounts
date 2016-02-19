@@ -87,7 +87,7 @@
                      (login-form-success))
                    (login-form-not-found)))
 
-           (GET "/:id/:ts/:hmac" [id ts hmac]
+           (GET ["/:id/:ts/:hmac" :ts #"[0-9]+"] [id ts hmac]
                 (login-complete users id ts hmac))
 
            (GET "/" [] (login-form))))
