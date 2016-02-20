@@ -40,6 +40,7 @@
 
    We should reject expired login links, without doing any database hits.
 
+** TODO Add config for server secret
 ** TODO Reject login links with invalid hmac
 ** TODO Ability to complete login
 
