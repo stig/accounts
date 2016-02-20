@@ -35,6 +35,7 @@
    secret. We only use these to create and verify the HMAC. This way we don't
    have to create a table of tokens waiting for verification.
 
+** DONE Remove example component
 ** TODO Ability to complete login
 
    When someone clicks on a login link we should do the following:

@@ -3,7 +3,6 @@
              [mailer :refer [mailer]]
              [users :refer [users]]]
             [accounts.endpoint
-             [example :refer [example-endpoint]]
              [login :refer [login-endpoint]]]
             [clojure.java.io :as io]
             [com.stuartsierra.component :as component]
@@ -40,12 +39,10 @@
          :mailer (mailer (:smtp config))
          :ragtime (ragtime (:ragtime config))
          :users (users)
-         :login (endpoint-component login-endpoint)
-         :example (endpoint-component example-endpoint))
+         :login (endpoint-component login-endpoint))
         (component/system-using
          {:http [:app]
-          :app  [:example :login]
+          :app  [:login]
           :ragtime [:db]
           :users [:db]
-          :login [:users :mailer]
-          :example [:db]}))))
+          :login [:users :mailer]}))))
