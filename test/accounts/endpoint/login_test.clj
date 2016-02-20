@@ -40,6 +40,9 @@
 (defn- find-link [mail-body]
   (re-find #"/login/\d+/\d+/[a-f0-9]+" mail-body))
 
+(defn- add-user [email]
+  (add (-> system :users) {:email email :moniker "Full Name"}))
+
 (defn- future-timestamp []
   (+ (System/currentTimeMillis) 1000))
 
@@ -66,8 +69,7 @@
     ;; We don't support registering yet, so manually add a test user
     ;; before the login attempt.
     (let [email (str (gensym) "@example.com")
-          channel (-> system :mailer :channel)
-          user-id (add users {:email email :moniker email})]
+          user-id (add-user email)]
 
       (-> (session (handler))
           (visit "/login")
