@@ -31,7 +31,7 @@
   (layout/base
    (list [:h1 "Login token on its way!"]
          [:p "We just sent a login link to the email address you specified. It
-         should be with you shortly. The link is only valid for 20 minutes, so
+         should be with you shortly. The link is only valid for a short while, so
          please check your mail."])))
 
 (defn- login-failed
