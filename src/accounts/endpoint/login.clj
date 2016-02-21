@@ -50,7 +50,7 @@
         min (- max (* 10 60 1000))]
     (< min (Long/parseLong ts) max)))
 
-(defn- login-complete
+(defn- handle-complete-login
   [users id ts hmac]
   (if (good-timestamp? ts)
     (if-let [user (find-by-id users id)]
@@ -68,7 +68,7 @@
           timestamp
           (hmac "server-secret" scheme host user-id last-login timestamp)))
 
-(defn- handle-login
+(defn- handle-begin-login
   [users email mailer scheme host]
   (if-let [user (find-by-email users email)]
                    (let [timestamp (current-timestamp)
@@ -84,9 +84,9 @@
   (context "/login" []
            (POST "/" [email :as {{host "host"} :headers
                                  scheme :scheme}]
-                 (handle-login users email mailer scheme host))
+                 (handle-begin-login users email mailer scheme host))
 
            (GET ["/:id/:ts/:hmac" :ts #"[0-9]+"] [id ts hmac]
-                (login-complete users id ts hmac))
+                (handle-complete-login users id ts hmac))
 
            (GET "/" [] (login-form))))
