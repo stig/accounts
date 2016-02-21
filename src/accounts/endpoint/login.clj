@@ -34,19 +34,12 @@
          should be with you shortly. The link is only valid for 20 minutes, so
          please check your mail."])))
 
-
-
-(defn- login-form-not-found []
+(defn- login-failed
+  [reason]
   (layout/base
-   (list [:h1 "User not found"]
-         [:p "I'm afraid a user with that email address could not be found in
-         our database. Would you like to try again?"])))
-
-(defn- login-link-expired []
-  (layout/base
-   (list [:h1 "Login link expired"]
-         [:p "Unfortunately the login link you used has expired."]
-         [:p "Do you want to try " [:a {:src "/login"} "login"] " again?"])))
+   (list [:h1 "Login failed"]
+         [:p reason]
+         [:p "Do you want to try " [:a {:src "/login"} "logging in"] " again?"])))
 
 (defn- current-timestamp []
   (System/currentTimeMillis))
@@ -63,10 +56,8 @@
     (if-let [user (find-by-id users id)]
       (layout/base
        (list [:h1 "You are logged in!"]))
-      (layout/base
-       (list [:h1 "User not found"]
-             [:p "No user was found with that user id."])))
-    (login-link-expired)))
+      (login-failed "No user was found with that user id."))
+    (login-failed "Unfortunately the login link you used is not valid at this time.")))
 
 (defn- build-url
   [scheme host user-id timestamp last-login]
@@ -86,7 +77,7 @@
                      (send-login-email mailer email
                                        (build-url scheme host user-id timestamp last-login))
                      (login-form-success))
-                   (login-form-not-found)))
+                   (login-failed "I'm afraid a user with that email address could not be found in our database.")))
 
 (defn login-endpoint [{users :users
                        mailer :mailer}]

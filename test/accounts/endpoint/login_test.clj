@@ -49,6 +49,12 @@
 (defn- good-timestamp []
   (- (System/currentTimeMillis) 1000))
 
+(defn login-failed [session text]
+   (within session [:h1]
+           (has (text? "Login failed")))
+   (within session [:p]
+           (has (some-text? text))))
+
 (deftest smoke-test
   (testing "login page exists"
     (-> (session (handler))
@@ -60,8 +66,7 @@
         (visit "/login")
         (fill-in "Email:" "notvalid@example.com")
         (press "submit")
-        (within [:h1]
-                (has (text? "User not found"))))
+        (login-failed "that email address could not be found"))
 
     (is (nil? (poll! (channel)))))
 
@@ -90,13 +95,11 @@
   (testing "login failed - bad timestamps"
     (-> (session (handler))
         (visit "/login/1/666/deadbeef")
-        (within [:h1]
-                (has (text? "Login link expired"))))
+        (login-failed "the login link you used is not valid at this time"))
 
     (-> (session (handler))
         (visit (format "/login/1/%s/deadbeef" (future-timestamp)))
-        (within [:h1]
-                (has (text? "Login link expired"))))
+        (login-failed "the login link you used is not valid at this time"))
 
     (-> (session (handler))
         (visit "/login/1/bad-timestamp/deadbeef")
@@ -105,8 +108,7 @@
   (testing "login failed - user not found"
     (-> (session (handler))
         (visit (format "/login/666/%s/deadbeef" (good-timestamp)))
-        (within [:h1]
-                (has (text? "User not found")))))
+        (login-failed "No user was found with that user id.")))
 
   (testing "login link incorrect shape"
     (-> (session (handler))
