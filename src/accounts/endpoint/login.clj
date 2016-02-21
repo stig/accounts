@@ -1,7 +1,7 @@
 (ns accounts.endpoint.login
   (:require [accounts.component
              [mailer :refer [mail]]
-             [users :as users]]
+             [users :refer [find-by-email]]]
             [accounts.layout :as layout]
             [compojure.core :refer :all]
             [hiccup.form :refer :all]
@@ -52,11 +52,11 @@
                 [:dt :hmac]
                 [:dd hmac]]))
 
-(defn login-endpoint [{{spec :spec} :db
+(defn login-endpoint [{users :users
                        mailer :mailer}]
   (context "/login" []
            (POST "/" [email]
-                 (if-let [user (users/find-by-email spec email)]
+                 (if-let [user (find-by-email users email)]
                    (do
                      (send-login-email mailer email)
                      (login-form-success))

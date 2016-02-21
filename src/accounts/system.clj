@@ -1,5 +1,7 @@
 (ns accounts.system
-  (:require [accounts.component.mailer :refer [mailer]]
+  (:require [accounts.component
+             [mailer :refer [mailer]]
+             [users :refer [users]]]
             [accounts.endpoint
              [example :refer [example-endpoint]]
              [login :refer [login-endpoint]]]
@@ -37,11 +39,13 @@
          :db   (hikaricp (:db config))
          :mailer (mailer (:smtp config))
          :ragtime (ragtime (:ragtime config))
+         :users (users)
          :login (endpoint-component login-endpoint)
          :example (endpoint-component example-endpoint))
         (component/system-using
          {:http [:app]
           :app  [:example :login]
           :ragtime [:db]
-          :login [:db :mailer]
+          :users [:db]
+          :login [:users :mailer]
           :example [:db]}))))

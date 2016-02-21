@@ -52,9 +52,9 @@
     ;; We don't support registering yet, so manually add a test user
     ;; before the login attempt.
     (let [email (str (gensym) "@example.com")
-          db-spec (-> system :db :spec)
+          users (-> system :users)
           channel (-> system :mailer :channel)
-          user-id (add db-spec {:email email :moniker email})]
+          user-id (add users {:email email :moniker email})]
       (-> (session (handler))
           (visit "/login")
           (fill-in "Email:" email)
