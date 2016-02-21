@@ -1,6 +1,6 @@
-(ns accounts.users-test
-  (:require [accounts.main :refer [config]]
-            [accounts.users :refer :all]
+(ns accounts.component.users-test
+  (:require [accounts.component.users :refer :all]
+            [accounts.main :refer [config]]
             [clojure.test :refer :all]))
 
 (def db-spec {:classname   "org.sqlite.JDBC"

@@ -1,11 +1,10 @@
 (ns accounts.endpoint.login
-  (:require [accounts
-             [layout :as layout]
+  (:require [accounts.component
+             [mailer :refer [mail]]
              [users :as users]]
-            [accounts.component.mailer :refer [mail]]
+            [accounts.layout :as layout]
             [compojure.core :refer :all]
-            [hiccup
-             [form :refer :all]]
+            [hiccup.form :refer :all]
             [ring.util.anti-forgery :refer [anti-forgery-field]]))
 
 (defn- login-form []

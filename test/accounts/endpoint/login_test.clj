@@ -1,8 +1,8 @@
 (ns accounts.endpoint.login-test
-  (:require [accounts
-             [system :refer [new-system]]
+  (:require [accounts.component
+             [mailer :refer [stub-mailer]]
              [users :refer [add]]]
-            [accounts.component.mailer :refer [stub-mailer]]
+            [accounts.system :refer [new-system]]
             [clojure.core.async :refer [<!! >!! poll!]]
             [clojure.test :refer :all]
             [com.stuartsierra.component :as component]

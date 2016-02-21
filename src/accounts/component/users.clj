@@ -1,4 +1,4 @@
-(ns accounts.users
+(ns accounts.component.users
   (:require [clojure.java.jdbc :as j]))
 
 (def ^:private last-insert-rowid (keyword "last_insert_rowid()"))
