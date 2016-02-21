@@ -68,24 +68,32 @@
              [:p "No user was found with that user id."])))
     (login-link-expired)))
 
+(defn- build-url
+  [scheme host user-id timestamp last-login]
+  (format "%s://%s/login/%s/%s/%s"
+          (name scheme)
+          host
+          user-id
+          timestamp
+          (hmac "server-secret" scheme host user-id last-login timestamp)))
+
+(defn- handle-login
+  [users email mailer scheme host]
+  (if-let [user (find-by-email users email)]
+                   (let [timestamp (current-timestamp)
+                         user-id (:id user)
+                         last-login (:last-login user)]
+                     (send-login-email mailer email
+                                       (build-url scheme host user-id timestamp last-login))
+                     (login-form-success))
+                   (login-form-not-found)))
+
 (defn login-endpoint [{users :users
                        mailer :mailer}]
   (context "/login" []
            (POST "/" [email :as {{host "host"} :headers
                                  scheme :scheme}]
-                 (if-let [user (find-by-email users email)]
-                   (let [timestamp (current-timestamp)
-                         user-id (:id user)
-                         last-login (:last-login user)]
-                     (send-login-email mailer email
-                                       (format "%s://%s/login/%s/%s/%s"
-                                               (name scheme)
-                                               host
-                                               user-id
-                                               timestamp
-                                               (hmac "server-secret" scheme host user-id last-login timestamp)))
-                     (login-form-success))
-                   (login-form-not-found)))
+                 (handle-login users email mailer scheme host))
 
            (GET ["/:id/:ts/:hmac" :ts #"[0-9]+"] [id ts hmac]
                 (login-complete users id ts hmac))
