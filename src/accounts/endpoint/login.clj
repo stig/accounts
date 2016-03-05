@@ -8,7 +8,7 @@
             [pandect.algo.sha256 :refer [sha256-hmac]]
             [ring.util.anti-forgery :refer [anti-forgery-field]]))
 
-(defn- hmac [secret & key-parts]
+(defn- make-hmac [secret & key-parts]
   (let [key (clojure.string/join "$" key-parts)]
     (sha256-hmac key secret)))
 
@@ -44,15 +44,15 @@
 (defn- current-timestamp []
   (System/currentTimeMillis))
 
-(defn- good-timestamp? [ts]
+(defn- good-timestamp? [timeout-ms ts]
   ;; timestamps are in milliseconds. Let's expire after 10 minutes.
   (let [max (current-timestamp)
-        min (- max (* 10 60 1000))]
+        min (- max timeout-ms)]
     (< min (Long/parseLong ts) max)))
 
 (defn- handle-complete-login
-  [users id ts hmac]
-  (if (good-timestamp? ts)
+  [token-timeout-ms users id ts hmac]
+  (if (good-timestamp? token-timeout-ms ts)
     (if-let [user (find-by-id users id)]
       (layout/base
        (list [:h1 "You are logged in!"]))
@@ -60,33 +60,34 @@
     (login-failed "Unfortunately the login link you used is not valid at this time.")))
 
 (defn- build-url
-  [scheme host user-id timestamp last-login]
+  [server-secret scheme host user-id timestamp last-login]
   (format "%s://%s/login/%s/%s/%s"
           (name scheme)
           host
           user-id
           timestamp
-          (hmac "server-secret" scheme host user-id last-login timestamp)))
+          (make-hmac server-secret scheme host user-id last-login timestamp)))
 
 (defn- handle-begin-login
-  [users email mailer scheme host]
+  [server-secret users email mailer scheme host]
   (if-let [user (find-by-email users email)]
-                   (let [timestamp (current-timestamp)
-                         user-id (:id user)
-                         last-login (:last-login user)]
-                     (send-login-email mailer email
-                                       (build-url scheme host user-id timestamp last-login))
-                     (login-form-success))
-                   (login-failed "I'm afraid a user with that email address could not be found in our database.")))
+    (let [timestamp (current-timestamp)
+          user-id (:id user)
+          last-login (:last-login user)]
+      (send-login-email mailer email
+                        (build-url server-secret scheme host user-id timestamp last-login))
+      (login-form-success))
+    (login-failed "I'm afraid a user with that email address could not be found in our database.")))
 
 (defn login-endpoint [{users :users
+                       {:keys [server-secret token-timeout-ms]} :login-config
                        mailer :mailer}]
   (context "/login" []
            (POST "/" [email :as {{host "host"} :headers
                                  scheme :scheme}]
-                 (handle-begin-login users email mailer scheme host))
+                 (handle-begin-login server-secret users email mailer scheme host))
 
            (GET ["/:id/:ts/:hmac" :ts #"[0-9]+"] [id ts hmac]
-                (handle-complete-login users id ts hmac))
+                (handle-complete-login token-timeout-ms users id ts hmac))
 
            (GET "/" [] (login-form))))

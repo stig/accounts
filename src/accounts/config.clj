@@ -6,4 +6,6 @@
 
 (def environ
   {:http {:port (some-> env :port Integer.)}
+   :login-config {:server-secret (some-> env :server-secret)
+                  :token-timeout-ms (some-> env :token-timeout-ms)}
    :db   {:uri  (env :database-url)}})

@@ -39,10 +39,11 @@
          :mailer (mailer (:smtp config))
          :ragtime (ragtime (:ragtime config))
          :users (users)
+         :login-config (:login-config config)
          :login (endpoint-component login-endpoint))
         (component/system-using
          {:http [:app]
           :app  [:login]
           :ragtime [:db]
           :users [:db]
-          :login [:users :mailer]}))))
+          :login [:users :mailer :login-config]}))))

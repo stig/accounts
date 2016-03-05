@@ -20,7 +20,9 @@
       ;; Don't actually send email: use our test mailer instead
       (assoc :mailer (stub-mailer))))
 
-(def config {:db {:uri "jdbc:sqlite::memory:"}})
+(def config {:db {:uri "jdbc:sqlite::memory:"}
+             :login-config {:server-secret "sikrit"
+                            :token-timeout-ms (* 60 1000)}})
 
 (def system (test-system config))
 
