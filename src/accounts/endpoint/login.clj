@@ -8,8 +8,11 @@
             [pandect.algo.sha256 :refer [sha256-hmac]]
             [ring.util.anti-forgery :refer [anti-forgery-field]]))
 
-(defn- make-hmac [secret & key-parts]
-  (let [key (clojure.string/join "$" key-parts)]
+(def ^:private hmac-parts [:scheme :host :user-id :last-login :timestamp])
+
+(defn- make-hmac [{secret :server-secret :as config}]
+  (let [key-parts (-> hmac-parts (get config))
+        key (clojure.string/join "$" key-parts)]
     (sha256-hmac key secret)))
 
 (defn- login-form []
@@ -60,13 +63,13 @@
     (login-failed "Unfortunately the login link you used is not valid at this time.")))
 
 (defn- build-url
-  [server-secret scheme host user-id timestamp last-login]
+  [{:keys [scheme host user-id timestamp] :as url-config}]
   (format "%s://%s/login/%s/%s/%s"
           (name scheme)
           host
           user-id
           timestamp
-          (make-hmac server-secret scheme host user-id last-login timestamp)))
+          (make-hmac url-config)))
 
 (defn- handle-begin-login
   [server-secret users email mailer scheme host]
@@ -75,7 +78,12 @@
           user-id (:id user)
           last-login (:last-login user)]
       (send-login-email mailer email
-                        (build-url server-secret scheme host user-id timestamp last-login))
+                        (build-url {:server-secret server-secret
+                                    :scheme scheme
+                                    :host host
+                                    :user-id user-id
+                                    :timestamp timestamp
+                                    :last-login last-login}))
       (login-form-success))
     (login-failed "I'm afraid a user with that email address could not be found in our database.")))
 
