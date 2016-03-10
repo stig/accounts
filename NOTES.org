@@ -1,3 +1,4 @@
+#+TODO: TODO NEXT IN-PROGRESS DONE
 * Tasks
 
   I've decided to do these things for now. That doesn't mean that they're not
@@ -41,8 +42,9 @@
    We should reject expired login links, without doing any database hits.
 
 ** DONE Add config for server secret
-** TODO Reject login links with invalid hmac
-** TODO Ability to complete login
+** DONE Reject login links with invalid hmac
+** IN-PROGRESS Use constant-time comparison function for for hmac
+** NEXT Ability to complete login
 
    When someone clicks on a login link we should do the following:
    - Check if the provided timestamp is recent enough. (Let's keep this

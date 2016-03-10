@@ -54,11 +54,21 @@
     (< min (Long/parseLong ts) max)))
 
 (defn- handle-complete-login
-  [token-timeout-ms users id ts hmac]
+  [server-secret token-timeout-ms scheme host users id ts hmac]
   (if (good-timestamp? token-timeout-ms ts)
     (if-let [user (find-by-id users id)]
-      (layout/base
-       (list [:h1 "You are logged in!"]))
+      ;; TODO use a constant-time comparison function to avoid timing attacks
+      ;; (def ^:private hmac-parts [:scheme :host :user-id :last-login :timestamp])
+      (if (= hmac (make-hmac {:server-secret server-secret
+                              :token-timeout-ms token-timeout-ms
+                              :scheme scheme
+                              :host host
+                              :user-id id
+                              :last-login (:last-login user)
+                              :timestamp ts}))
+        (layout/base
+         (list [:h1 "You are logged in!"]))
+        (login-failed "The login token (hmac) at the end of this link is invalid."))
       (login-failed "No user was found with that user id."))
     (login-failed "Unfortunately the login link you used is not valid at this time.")))
 
@@ -95,7 +105,8 @@
                                  scheme :scheme}]
                  (handle-begin-login server-secret users email mailer scheme host))
 
-           (GET ["/:id/:ts/:hmac" :ts #"[0-9]+"] [id ts hmac]
-                (handle-complete-login token-timeout-ms users id ts hmac))
+           (GET ["/:id/:ts/:hmac" :ts #"[0-9]+"] [id ts hmac :as {{host "host"} :headers
+                                                                  scheme :scheme}]
+                (handle-complete-login server-secret token-timeout-ms scheme host users id ts hmac))
 
            (GET "/" [] (login-form))))

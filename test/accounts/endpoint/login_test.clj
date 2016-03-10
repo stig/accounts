@@ -107,6 +107,11 @@
         (visit "/login/1/bad-timestamp/deadbeef")
         (has (status? 404))))
 
+  (testing "login failed - bad hmac"
+    (-> (session (handler))
+        (visit (format "/login/1/%s/bad-hmac" (good-timestamp)))
+        (login-failed "The login token (hmac) at the end of this link is invalid.")))
+
   (testing "login failed - user not found"
     (-> (session (handler))
         (visit (format "/login/666/%s/deadbeef" (good-timestamp)))
