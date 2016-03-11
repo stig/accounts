@@ -43,7 +43,7 @@
 
 ** DONE Add config for server secret
 ** DONE Reject login links with invalid hmac
-** IN-PROGRESS Use constant-time comparison function for for hmac
+** DONE Use constant-time comparison function for for hmac
 ** NEXT Ability to complete login
 
    When someone clicks on a login link we should do the following:
@@ -58,9 +58,16 @@
      | timestamp            | request        |
      | server secret        | server config  |
    - Compare the new HMAC to the one from the request. If it does not match,
-     throw an error. Otherwise, it was a valid request, so present a form
-     asking for the user to confirm that they want to log in. Optionally, offer
-     them to name the device they're logging in from.
+     throw an error. Otherwise, it was a valid request, so let them in.
+
+** TODO Set a session cookie when logged in & add protected endpoint to test it
+** TODO Add a way to log out
+
+   i.e. delete the session cookie.
+
+** TODO Present form asking for the user to confirm that they want to log in
+
+   Optionally, offer them to name the device they're logging in from.
 
 ** TODO Record each successful login
 

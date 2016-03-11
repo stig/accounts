@@ -4,6 +4,7 @@
              [users :refer [find-by-email find-by-id]]]
             [accounts.layout :as layout]
             [compojure.core :refer :all]
+            [crypto.equality :as crypto]
             [hiccup.form :refer :all]
             [pandect.algo.sha256 :refer [sha256-hmac]]
             [ring.util.anti-forgery :refer [anti-forgery-field]]))
@@ -57,15 +58,13 @@
   [server-secret token-timeout-ms scheme host users id ts hmac]
   (if (good-timestamp? token-timeout-ms ts)
     (if-let [user (find-by-id users id)]
-      ;; TODO use a constant-time comparison function to avoid timing attacks
-      ;; (def ^:private hmac-parts [:scheme :host :user-id :last-login :timestamp])
-      (if (= hmac (make-hmac {:server-secret server-secret
-                              :token-timeout-ms token-timeout-ms
-                              :scheme scheme
-                              :host host
-                              :user-id id
-                              :last-login (:last-login user)
-                              :timestamp ts}))
+      (if (crypto/eq? hmac (make-hmac {:server-secret server-secret
+                                       :token-timeout-ms token-timeout-ms
+                                       :scheme scheme
+                                       :host host
+                                       :user-id id
+                                       :last-login (:last-login user)
+                                       :timestamp ts}))
         (layout/base
          (list [:h1 "You are logged in!"]))
         (login-failed "The login token (hmac) at the end of this link is invalid."))
